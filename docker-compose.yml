@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+
+  nginx:
+    build: docker/nginx
+    ports:
+      - "8085:80"
+    depends_on:
+      - php
+    volumes:
+      - ./:/var/www/symfony
+      - ./logs/nginx/:/var/log/nginx
+
+  php:
+    build: docker/php-fpm
+    expose:
+      - 9000
+    volumes:
+      - ./:/var/www/symfony
+    depends_on:
+      - mysql
+
+#  mailcatcher:
+#    image: schickling/mailcatcher
+#    hostname: chickadee-mail
+#    ports:
+#      - 1025
+#      - 1080:1080
+#
+#  adminer:
+#    image: adminer
+#    restart: always
+#    ports:
+#      - 8888:8081
+#
+#  rabbitmq:
+#    build: docker/rabbitmq
+#    ports:
+#      - 4369:4369
+#      - 5672:5672
+#      - 25672:25672
+#      - 15672:15672
+#
+#  redis:
+#    image: redis:5.0
+#    ports:
+#      - 6379:6379
+#
+  frontend:
+    build: docker/frontend
+    volumes:
+      - ./:/var/www/html
